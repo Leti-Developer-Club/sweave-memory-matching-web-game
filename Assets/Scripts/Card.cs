@@ -1,7 +1,15 @@
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class Card : MonoBehaviour
 {
+    // since the game will have varying levels of difficulty - from 3 x 3 to 6 x 6 grids, 
+    // the sprites for the front of the cards will have to be loaded randomly and programmatically
+    // collectively the front sprites will be an array or list of type Sprite
+    // Each card will randomly set one of the front sprites from the list as its front sprite
+    // the default size of the array will be 3 for a 3 x 3 grid
+    [SerializeField] List<Sprite> frontSprites = new List<Sprite>();
     [SerializeField] GameObject frontSprite;
     [SerializeField] GameObject backSprite;
 
@@ -17,6 +25,47 @@ public class Card : MonoBehaviour
         startTime = Time.realtimeSinceStartup;
         Debug.Log("Initial startTime: " + startTime);
         isRoundStarting = true;
+
+
+        // load sprites from the folder containing the sprites and add them to the frontSprites list
+        frontSprites = Resources.LoadAll<Sprite>("Resources/Sprites/FrontSprites/").ToList();
+        Debug.Log("No of sprites: " + frontSprites.Count);
+
+
+        if (frontSprites == null || frontSprites.Count < 0)
+        {
+            Debug.LogError($"No sprites found at path the specified path");
+            return;
+        }
+
+        foreach (var sprite in frontSprites)
+        {
+            Debug.Log($"Loaded sprite: {sprite.name}");
+        }
+
+        // get the sprite on the SpriteRenderer component on the frontSprite gameobject
+        // SpriteRenderer frontSpriteSpriteRenderer = frontSprite.GetComponent<SpriteRenderer>();
+        // Sprite actualFrontSprite = frontSpriteSpriteRenderer.sprite;
+        // actualFrontSprite = frontSprites[randomValue];
+
+        // assign one of the items in the list as the frontsprite of the card, it should be random
+        // the sprites should be assigned randomly
+        int listLength = frontSprites.Count;
+        Debug.LogError("This is the length of the list: " + listLength);
+
+        if (listLength > 0)
+        {
+            int randomValue = Random.Range(0, listLength);
+            frontSprite.GetComponent<SpriteRenderer>().sprite = frontSprites[randomValue];
+
+        }
+
+        else
+        {
+            Debug.LogError("Cannot assign a sprite because the list is empty.");
+        }
+
+
 
         // show the front sprite by default, after a specified time show only the back sprite of the card
         backSprite.transform.position = new Vector3(transform.position.x, transform.position.y, 4.0f);

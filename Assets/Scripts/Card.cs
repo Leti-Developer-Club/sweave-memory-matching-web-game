@@ -22,15 +22,13 @@ public class Card : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        // load sprites from the folder containing the sprites and add them to the frontSprites list
+        frontSprites = Resources.LoadAll<Sprite>("Sprites/FrontSprites/").ToList();
+        Debug.Log("No of sprites: " + frontSprites.Count);
+
         startTime = Time.realtimeSinceStartup;
         Debug.Log("Initial startTime: " + startTime);
         isRoundStarting = true;
-
-
-        // load sprites from the folder containing the sprites and add them to the frontSprites list
-        frontSprites = Resources.LoadAll<Sprite>("Resources/Sprites/FrontSprites/").ToList();
-        Debug.Log("No of sprites: " + frontSprites.Count);
-
 
         if (frontSprites == null || frontSprites.Count < 0)
         {
@@ -109,7 +107,37 @@ public class Card : MonoBehaviour
 
             // isRoundStarting = false;
 
-        }
+        } 
+
+        
+    }
+
+    // public void OnMouseDown()
+    // {
+    //     // the back sprite should be closer to the camera, and 
+    //     // the z position of the back sprite is -0.2
+    //     // the front sprite should be behind the back sprite
+    //     // the z position of the front sprite is 0.1
+    //     // when the back sprite is disabled the front sprite should be rendered
+    //     Debug.Log("This is the game card");
+    //     if (backSprite.activeSelf)
+    //     {
+    //         backSprite.transform.position = new Vector3(transform.position.x, transform.position.y, 4.0f);
+    //         frontSprite.transform.position = new Vector3(transform.position.x, transform.position.y, -2.0f);
+    //         // at the start of the game, the front of the card(s) should be shown to the player for a few seconds, 
+    //         // then the card flip over to show the back of the card or hide the front of the card 
+    //         // the front of the spr
+
+    //     }
+
+    // }
+
+    // when the card is clicked it should show the front sprite for a brief moment
+    public void OnMouseDown()
+    {
+        Debug.Log("Clicking on the card...");
+        backSprite.transform.position = new Vector3(transform.position.x, transform.position.y, 4.0f);
+        frontSprite.transform.position = new Vector3(transform.position.x, transform.position.y, -2.0f);
 
     }
 
@@ -119,23 +147,5 @@ public class Card : MonoBehaviour
     // disable back sprite, then enable front sprite
     // add animation to create illusion of card flipping
 
-    // public void OnMouseDown()
-    // {   
-    //     // the back sprite should be closer to the camera, and 
-    //     // the z position of the back sprite is -0.2
-    //     // the front sprite should be behind the back sprite
-    //     // the z position of the front sprite is 0.1
-    //     // when the back sprite is disabled the front sprite should be rendered
-    //     Debug.Log("This is the game card");
-    //     if (backSprite.activeSelf)
-    //     {
-    //         backSprite.SetActive(false);
-    //         frontSprite.transform.position = new Vector3(transform.position.x, transform.position.y, -0.02f);
-    //         // at the start of the game, the front of the card(s) should be shown to the player for a few seconds, 
-    //         // then the card flip over to show the back of the card or hide the front of the card 
-    //         // the front of the spr
 
-    //     }
-
-    // }
 }

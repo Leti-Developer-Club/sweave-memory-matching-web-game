@@ -18,21 +18,25 @@ public class Card : MonoBehaviour
     // has the game started?
     private bool isRoundStarting;
 
+    private bool isFrontVisible;
+
+    private bool isBackVisible;
     [SerializeField] float revealTime = 2.5f;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         // load sprites from the folder containing the sprites and add them to the frontSprites list
         frontSprites = Resources.LoadAll<Sprite>("Sprites/FrontSprites/").ToList();
-        Debug.Log("No of sprites: " + frontSprites.Count);
+        // Debug.Log("No of sprites: " + frontSprites.Count);
 
         startTime = Time.realtimeSinceStartup;
-        Debug.Log("Initial startTime: " + startTime);
+        // Debug.Log("Initial startTime: " + startTime);
         isRoundStarting = true;
+
 
         if (frontSprites == null || frontSprites.Count < 0)
         {
-            Debug.LogError($"No sprites found at path the specified path");
+            // Debug.LogError($"No sprites found at path the specified path");
             return;
         }
 
@@ -49,7 +53,7 @@ public class Card : MonoBehaviour
         // assign one of the items in the list as the frontsprite of the card, it should be random
         // the sprites should be assigned randomly
         int listLength = frontSprites.Count;
-        Debug.LogError("This is the length of the list: " + listLength);
+        // Debug.LogError("This is the length of the list: " + listLength);
 
         if (listLength > 0)
         {
@@ -63,11 +67,17 @@ public class Card : MonoBehaviour
             Debug.LogError("Cannot assign a sprite because the list is empty.");
         }
 
-
-
         // show the front sprite by default, after a specified time show only the back sprite of the card
+
+        frontSprite.transform.position = new Vector3(transform.position.x, transform.position.y, -4.0f);
+        // Debug.Log("Z position of the front sprite: " + frontSprite.transform.position.z);
+        
         backSprite.transform.position = new Vector3(transform.position.x, transform.position.y, 4.0f);
-        frontSprite.transform.position = new Vector3(transform.position.x, transform.position.y, -2.0f);
+        // Debug.Log("Z position of the back sprite: " + backSprite.transform.position.z);
+
+        isFrontVisible = true;
+        isBackVisible = false;
+
     }
 
     // Update is called once per frame
@@ -76,76 +86,78 @@ public class Card : MonoBehaviour
         // get the actual start time of the game 
         float elapsedTime = Time.realtimeSinceStartup - startTime;
 
-        Debug.Log($"Current time: {Time.realtimeSinceStartup}, startTime: {startTime}, elapsed: {elapsedTime}");
+        // Debug.Log($"Current time: {Time.realtimeSinceStartup}, startTime: {startTime}, elapsed: {elapsedTime}");
 
 
         // Debug.Log("The game has been running for: " + elapsedTime + "seconds");
         // Debug.Log("elapsedTime: " + elapsedTime);
-        Debug.Log("revealTime: " + revealTime);
-        Debug.Log("isRoundStarting: " + isRoundStarting);
-        Debug.Log("Condition check: " + (elapsedTime > revealTime && isRoundStarting));
+        // Debug.Log("revealTime: " + revealTime);
+        // Debug.Log("isRoundStarting: " + isRoundStarting);
+        // Debug.Log("Condition check: " + (elapsedTime > revealTime && isRoundStarting));
 
 
-        // hide the cards after the specified reveal time
-        FlipCard(elapsedTime, revealTime);
+        // hide the front sprite of the card after the specified reveal time
+        if (isRoundStarting && elapsedTime > revealTime)
+        {
+            HideFront();
+            isRoundStarting = false;
+        }
 
+        Debug.Log("Is the front sprite visible in the update method? : " + isFrontVisible);
+        Debug.Log("Is the back sprite visible in the update method? : " + isBackVisible);
     }
 
-    public void FlipCard(float elapsedTime, float revealTime)
+    public void HideFront()
     {
-        if (elapsedTime > revealTime)
+        if (isFrontVisible)
         {
-            Debug.Log("Flipping card!");
-
-            // hide the front sprites after a brief moment, then flip the card to show the back
-
-            backSprite.transform.position = new Vector3(transform.position.x, transform.position.y, -2.0f);
-            Debug.Log("Z position of the back sprite: " + backSprite.transform.position.z);
+            Debug.Log("Hide front!");
 
             frontSprite.transform.position = new Vector3(transform.position.x, transform.position.y, 4.0f);
             Debug.Log("Z position of the front sprite: " + frontSprite.transform.position.z);
 
-            // isRoundStarting = false;
+            backSprite.transform.position = new Vector3(transform.position.x, transform.position.y, -4.0f);
+            Debug.Log("Z position of the back sprite: " + backSprite.transform.position.z);
 
-        } 
+            isFrontVisible = false;
+            isBackVisible = true;
+            Debug.Log("Front sprite hidden");
 
-        
+        }
+
     }
 
-    // public void OnMouseDown()
-    // {
-    //     // the back sprite should be closer to the camera, and 
-    //     // the z position of the back sprite is -0.2
-    //     // the front sprite should be behind the back sprite
-    //     // the z position of the front sprite is 0.1
-    //     // when the back sprite is disabled the front sprite should be rendered
-    //     Debug.Log("This is the game card");
-    //     if (backSprite.activeSelf)
-    //     {
-    //         backSprite.transform.position = new Vector3(transform.position.x, transform.position.y, 4.0f);
-    //         frontSprite.transform.position = new Vector3(transform.position.x, transform.position.y, -2.0f);
-    //         // at the start of the game, the front of the card(s) should be shown to the player for a few seconds, 
-    //         // then the card flip over to show the back of the card or hide the front of the card 
-    //         // the front of the spr
-
-    //     }
-
-    // }
-
+    // to flip the card from the front to the back, the positions of the front and back sprites are swapped after some time has elapsed
+    // to flip the card from the back to the front after the card has been clicked on and how the front sprite for a brief moment, check to see if the card has been clicked, minotor has how time has passed since the card has been clicked on, as long as the brief moment of time hasn't passed, swap then the positions of the front and back sprites, after that brief moment has passed, swap the front and back sprites again
     // when the card is clicked it should show the front sprite for a brief moment
-    public void OnMouseDown()
+    // this click should only be possible after the card has been flipped for the first time in each round of the game
+    private void OnMouseDown()
     {
+
         Debug.Log("Clicking on the card...");
-        backSprite.transform.position = new Vector3(transform.position.x, transform.position.y, 4.0f);
-        frontSprite.transform.position = new Vector3(transform.position.x, transform.position.y, -2.0f);
+        if (!isFrontVisible)
+        {
+            // show the front sprite for a brief moment
+
+            frontSprite.transform.position = new Vector3(transform.position.x, transform.position.y, -4.0f);
+            // Debug.Log("Z position of the front sprite: " + frontSprite.transform.position.z);
+
+            backSprite.transform.position = new Vector3(transform.position.x, transform.position.y, 4.0f);
+            // Debug.Log("Z position of the back sprite: " + backSprite.transform.position.z);
+
+            isFrontVisible = true;
+            Debug.Log("Is the back sprite visible in the OnMouseDown method? : " + isBackVisible);
+            Debug.Log("Front sprite revealed");
+
+            StartCoroutine(HideAfterDelay(2.5f));
+
+        }
 
     }
 
-    // when i click on a card is should show the front sprite for a brief moment
-    // if the card the card has been clicked on, 
-    // flip card for a specified period to show the front sprite
-    // disable back sprite, then enable front sprite
-    // add animation to create illusion of card flipping
-
-
+    private System.Collections.IEnumerator HideAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        HideFront();
+    }
 }

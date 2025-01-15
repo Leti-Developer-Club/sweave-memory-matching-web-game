@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Card : MonoBehaviour
 {
-    // since the game will have varying levels of difficulty - from 3 x 3 to 6 x 6 grids, 
+    // since the game will have varying levels of difficulty - from 3 x 3 to 6 x 6 grids,
     // the sprites for the front of the cards will have to be loaded randomly and programmatically
     // collectively the front sprites will be an array or list of type Sprite
     // Each card will randomly set one of the front sprites from the list as its front sprite
@@ -20,7 +20,7 @@ public class Card : MonoBehaviour
 
     private bool isFrontVisible;
 
-    private bool isBackVisible;
+    // private bool isBackVisible;
     [SerializeField] float revealTime = 2.5f;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -71,19 +71,19 @@ public class Card : MonoBehaviour
 
         frontSprite.transform.position = new Vector3(transform.position.x, transform.position.y, -4.0f);
         // Debug.Log("Z position of the front sprite: " + frontSprite.transform.position.z);
-        
+
         backSprite.transform.position = new Vector3(transform.position.x, transform.position.y, 4.0f);
         // Debug.Log("Z position of the back sprite: " + backSprite.transform.position.z);
 
         isFrontVisible = true;
-        isBackVisible = false;
+        // isBackVisible = false;
 
     }
 
     // Update is called once per frame
     void Update()
     {
-        // get the actual start time of the game 
+        // get the actual start time of the game
         float elapsedTime = Time.realtimeSinceStartup - startTime;
 
         // Debug.Log($"Current time: {Time.realtimeSinceStartup}, startTime: {startTime}, elapsed: {elapsedTime}");
@@ -104,7 +104,7 @@ public class Card : MonoBehaviour
         }
 
         Debug.Log("Is the front sprite visible in the update method? : " + isFrontVisible);
-        Debug.Log("Is the back sprite visible in the update method? : " + isBackVisible);
+        // Debug.Log("Is the back sprite visible in the update method? : " + isBackVisible);
     }
 
     public void HideFront()
@@ -120,7 +120,7 @@ public class Card : MonoBehaviour
             Debug.Log("Z position of the back sprite: " + backSprite.transform.position.z);
 
             isFrontVisible = false;
-            isBackVisible = true;
+            // isBackVisible = true;
             Debug.Log("Front sprite hidden");
 
         }
@@ -146,7 +146,7 @@ public class Card : MonoBehaviour
             // Debug.Log("Z position of the back sprite: " + backSprite.transform.position.z);
 
             isFrontVisible = true;
-            Debug.Log("Is the back sprite visible in the OnMouseDown method? : " + isBackVisible);
+            // Debug.Log("Is the back sprite visible in the OnMouseDown method? : " + isBackVisible);
             Debug.Log("Front sprite revealed");
 
             StartCoroutine(HideAfterDelay(2.5f));

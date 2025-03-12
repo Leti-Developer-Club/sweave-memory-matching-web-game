@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 public class SceneSwitcher : MonoBehaviour
 {
-    private Button playButton;
+    private Button button;
     public string sceneName;
 
     void Start()
@@ -13,11 +13,11 @@ public class SceneSwitcher : MonoBehaviour
         Debug.Log("Script attached to: " + gameObject.name);
 
         // Get the Button component and add a listener
-        playButton = GetComponent<Button>();
+        button = GetComponent<Button>();
 
-        if (playButton != null)
+        if (button != null)
         {
-            playButton.onClick.AddListener(() => LoadGameScene(sceneName));
+            button.onClick.AddListener(() => LoadGameScene(sceneName));
         }
     }
 

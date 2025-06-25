@@ -1,0 +1,20 @@
+fileFormatVersion: 2
+guid: ddae8c860d2c7bb0b942b0f1cefc8b1a
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - difficultyButton: {instanceID: 0}
+  - easyButton: {instanceID: 0}
+  - mediumButton: {instanceID: 0}
+  - hardButton: {instanceID: 0}
+  - closeButton: {instanceID: 0}
+  - difficultyModalCanvas: {instanceID: 0}
+  - settingsCanvas: {instanceID: 0}
+  - memoryCard: {fileID: 971515975699154193, guid: c25bb1d6b5f6f325d8d715e855c50716,
+      type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -1,163 +1,181 @@
-using System.Collections.Generic;
-using System.Linq;
+using System.Collections;
 using UnityEngine;
 
 public class Card : MonoBehaviour
 {
-    // since the game will have varying levels of difficulty - from 3 x 3 to 6 x 6 grids,
-    // the sprites for the front of the cards will have to be loaded randomly and programmatically
-    // collectively the front sprites will be an array or list of type Sprite
-    // Each card will randomly set one of the front sprites from the list as its front sprite
-    // the default size of the array will be 3 for a 3 x 3 grid
-    [SerializeField] List<Sprite> frontSprites = new List<Sprite>();
-    [SerializeField] GameObject frontSprite;
-    [SerializeField] GameObject backSprite;
-
+    public GameObject frontSprite; // Child GameObject that displays the front image
+    [SerializeField] GameObject backSprite;  // Child GameObject of frontSprite that displays the back sprite or image
     private float startTime;
-
-    // has the game started?
     private bool isRoundStarting;
-
     private bool isFrontVisible;
+    float revealTime;
 
-    // private bool isBackVisible;
-    [SerializeField] float revealTime = 2.5f;
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    // Desired target dimensions for the front sprite within the card container.
+    // These values represent the size of the card's face regardless of the sprite's native size.
+    public Vector2 targetSpriteSize = new Vector2(1.75f, 1.75f);
+
+    public Vector2 targetBackSpriteSize = new Vector2(3.0f, 3.0f);    // For the back sprite.
+
+    // Store the original prefab scale instead of trying to calculate new ones
+    private Vector3 originalBackScale;
+
+    public int id;
+
+    public bool IsMatched { get; set; } // Property to track if the card is matched
+    // public bool IsRevealed { get; set; } // Property to track if the card is revealed
+
+    void Awake()
+    {
+        // Store the original scale from the prefab
+        if (backSprite != null)
+        {
+            originalBackScale = backSprite.transform.localScale * 5.75f;
+            Debug.Log($"Original back scale stored: {originalBackScale}");
+        }
+    }
     void Start()
     {
-        // load sprites from the folder containing the sprites and add them to the frontSprites list
-        frontSprites = Resources.LoadAll<Sprite>("Sprites/FrontSprites/").ToList();
-        // Debug.Log("No of sprites: " + frontSprites.Count);
-
-        startTime = Time.realtimeSinceStartup;
-        // Debug.Log("Initial startTime: " + startTime);
-        isRoundStarting = true;
-
-
-        if (frontSprites == null || frontSprites.Count < 0)
+        if (GameManager.Instance != null)
         {
-            // Debug.LogError($"No sprites found at path the specified path");
-            return;
+            revealTime = GameManager.Instance.revealTime;
         }
-
-        foreach (var sprite in frontSprites)
-        {
-            Debug.Log($"Loaded sprite: {sprite.name}");
-        }
-
-        // get the sprite on the SpriteRenderer component on the frontSprite gameobject
-        // SpriteRenderer frontSpriteSpriteRenderer = frontSprite.GetComponent<SpriteRenderer>();
-        // Sprite actualFrontSprite = frontSpriteSpriteRenderer.sprite;
-        // actualFrontSprite = frontSprites[randomValue];
-
-        // assign one of the items in the list as the frontsprite of the card, it should be random
-        // the sprites should be assigned randomly
-        int listLength = frontSprites.Count;
-        // Debug.LogError("This is the length of the list: " + listLength);
-
-        if (listLength > 0)
-        {
-            int randomValue = Random.Range(0, listLength);
-            frontSprite.GetComponent<SpriteRenderer>().sprite = frontSprites[randomValue];
-
-        }
-
         else
         {
-            Debug.LogError("Cannot assign a sprite because the list is empty.");
+            Debug.LogError("GameManager script is not available");
         }
 
-        // show the front sprite by default, after a specified time show only the back sprite of the card
-
-        frontSprite.transform.position = new Vector3(transform.position.x, transform.position.y, -4.0f);
-        // Debug.Log("Z position of the front sprite: " + frontSprite.transform.position.z);
-
-        backSprite.transform.position = new Vector3(transform.position.x, transform.position.y, 4.0f);
-        // Debug.Log("Z position of the back sprite: " + backSprite.transform.position.z);
-
+        startTime = Time.realtimeSinceStartup;
+        isRoundStarting = true;
         isFrontVisible = true;
-        // isBackVisible = false;
 
+        // Ensure back sprite maintains its original scale
+        if (backSprite != null)
+        {
+            backSprite.transform.localScale = originalBackScale;
+        }
+
+        // Set initial positions for front and back sprites.
+        SetSpritePositions(true);
     }
 
-    // Update is called once per frame
     void Update()
     {
-        // get the actual start time of the game
         float elapsedTime = Time.realtimeSinceStartup - startTime;
-
-        // Debug.Log($"Current time: {Time.realtimeSinceStartup}, startTime: {startTime}, elapsed: {elapsedTime}");
-
-
-        // Debug.Log("The game has been running for: " + elapsedTime + "seconds");
-        // Debug.Log("elapsedTime: " + elapsedTime);
-        // Debug.Log("revealTime: " + revealTime);
-        // Debug.Log("isRoundStarting: " + isRoundStarting);
-        // Debug.Log("Condition check: " + (elapsedTime > revealTime && isRoundStarting));
-
-
-        // hide the front sprite of the card after the specified reveal time
         if (isRoundStarting && elapsedTime > revealTime)
         {
             HideFront();
             isRoundStarting = false;
         }
 
-        Debug.Log("Is the front sprite visible in the update method? : " + isFrontVisible);
-        // Debug.Log("Is the back sprite visible in the update method? : " + isBackVisible);
+        // Ensure back sprite scale hasn't changed
+        if (backSprite != null && backSprite.transform.localScale != originalBackScale)
+        {
+            backSprite.transform.localScale = originalBackScale;
+        }
     }
 
     public void HideFront()
     {
-        if (isFrontVisible)
+        if (isFrontVisible && !IsMatched)
         {
-            Debug.Log("Hide front!");
-
-            frontSprite.transform.position = new Vector3(transform.position.x, transform.position.y, 4.0f);
-            Debug.Log("Z position of the front sprite: " + frontSprite.transform.position.z);
-
-            backSprite.transform.position = new Vector3(transform.position.x, transform.position.y, -4.0f);
-            Debug.Log("Z position of the back sprite: " + backSprite.transform.position.z);
-
+            // Logic to hide the front sprite
+            // IsRevealed = false;
+            SetSpritePositions(false);
             isFrontVisible = false;
-            // isBackVisible = true;
             Debug.Log("Front sprite hidden");
-
         }
-
     }
 
-    // to flip the card from the front to the back, the positions of the front and back sprites are swapped after some time has elapsed
-    // to flip the card from the back to the front after the card has been clicked on and how the front sprite for a brief moment, check to see if the card has been clicked, minotor has how time has passed since the card has been clicked on, as long as the brief moment of time hasn't passed, swap then the positions of the front and back sprites, after that brief moment has passed, swap the front and back sprites again
-    // when the card is clicked it should show the front sprite for a brief moment
-    // this click should only be possible after the card has been flipped for the first time in each round of the game
-    private void OnMouseDown()
+    // / <summary>
+    // / Sets the front sprite to a new sprite and scales it to fit the card's target size.
+    // / </summary>
+    // / <param name="newSprite">The sprite to assign.</param>
+    public void SetFrontSprite(Sprite newSprite)
     {
+        // Calculate scaling factors so that the sprite fits within targetSpriteSize.
+        // You might want to preserve the aspect ratio.
+        float scaleX = targetSpriteSize.x / newSprite.bounds.size.x;
+        float scaleY = targetSpriteSize.y / newSprite.bounds.size.y;
+        // To preserve the aspect ratio, choose the smaller scale factor:
+        float scaleFactor = Mathf.Min(scaleX, scaleY);
 
-        Debug.Log("Clicking on the card...");
-        if (!isFrontVisible)
-        {
-            // show the front sprite for a brief moment
-
-            frontSprite.transform.position = new Vector3(transform.position.x, transform.position.y, -4.0f);
-            // Debug.Log("Z position of the front sprite: " + frontSprite.transform.position.z);
-
-            backSprite.transform.position = new Vector3(transform.position.x, transform.position.y, 4.0f);
-            // Debug.Log("Z position of the back sprite: " + backSprite.transform.position.z);
-
-            isFrontVisible = true;
-            // Debug.Log("Is the back sprite visible in the OnMouseDown method? : " + isBackVisible);
-            Debug.Log("Front sprite revealed");
-
-            StartCoroutine(HideAfterDelay(2.5f));
-
-        }
+        // Set the local scale of the frontSprite child accordingly.
+        frontSprite.transform.localScale = new Vector3(scaleFactor, scaleFactor, 1);
 
     }
 
-    private System.Collections.IEnumerator HideAfterDelay(float delay)
+    public void SetBackSprite(Sprite newSprite)
+    {
+        // Calculate scaling factors for the back sprite based on its own target size.
+        float scaleX = targetBackSpriteSize.x / newSprite.bounds.size.x;
+        float scaleY = targetBackSpriteSize.y / newSprite.bounds.size.y;
+        float scaleFactor = Mathf.Min(scaleX, scaleY);
+
+        // Set the local scale of the backSprite child accordingly.
+        backSprite.transform.localScale = new Vector3(scaleFactor, scaleFactor, 1);
+    }
+
+
+
+    /// <summary>
+    /// Sets the positions of the front and back sprites relative to the card container.
+    /// </summary>
+    /// <param name="showFront">If true, the front sprite is shown; if false, it is hidden.</param>
+    private void SetSpritePositions(bool showFront)
+    {
+        // The container (this GameObject) maintains a fixed position and scale.
+        // We just adjust the z-order of the front and back sprites.
+        if (showFront)
+        {
+            frontSprite.transform.position = new Vector3(transform.position.x, transform.position.y, -4.0f);
+            backSprite.transform.position = new Vector3(transform.position.x, transform.position.y, 4.0f);
+        }
+        else
+        {
+            frontSprite.transform.position = new Vector3(transform.position.x, transform.position.y, 4.0f);
+            backSprite.transform.position = new Vector3(transform.position.x, transform.position.y, -4.0f);
+        }
+
+        //set a scale for the back sprite 
+        // Ensure the back sprite maintains its original scale
+        backSprite.transform.localScale = originalBackScale;
+    }
+
+    private IEnumerator HideAfterDelay(float delay)
     {
         yield return new WaitForSeconds(delay);
         HideFront();
+    }
+
+    private void OnMouseDown()
+    {
+        Debug.Log("Clicking on the card...: " + id);
+
+        // Check if cards can currently be revealed
+        if (!GameManager.Instance.canReveal)
+        {
+            return; // Exit if not allowed.
+        }
+
+        // only show the front sprite, if it is hidden
+        if (!isFrontVisible)
+        {
+            ShowFrontSprite();
+            StartCoroutine(HideAfterDelay(revealTime));
+            // let the GameManager know the front sprite is visible
+            GameManager.Instance.CardRevealed(this);
+        }
+    }
+
+    public void ShowFrontSprite()
+    {
+        SetSpritePositions(true);
+        isFrontVisible = true;
+        Debug.Log("Front sprite revealed");
+    }
+
+    public bool IsRevealed
+    {
+        get { return isFrontVisible; } // or some internal bool.
     }
 }

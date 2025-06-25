@@ -22,17 +22,17 @@ public class GameSettingsScriptableObject : ScriptableObject
                 case "Easy":
                     rows = 2;
                     cols = 4;
-                    revealTime = 3.0f;
+                    revealTime = 4.0f;
                     break;
                 case "Medium":
                     rows = 3;
                     cols = 6;
-                    revealTime = 2.0f;
+                    revealTime = 3.5f;
                     break;
                 case "Hard":
                     rows = 4;
                     cols = 8;
-                    revealTime = 1.5f;
+                    revealTime = 3.0f;
                     break;
                 default:
                     Debug.LogError("Unexpected button text: " + buttonText);

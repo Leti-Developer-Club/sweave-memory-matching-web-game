@@ -76,3 +76,5 @@ mono_crash.*
 
 # ignore vscode settings
 .vscode/
+codealike.json
+dotnet-tools.json

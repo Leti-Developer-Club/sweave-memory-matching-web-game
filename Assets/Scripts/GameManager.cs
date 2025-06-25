@@ -1,10 +1,9 @@
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using System.Collections.Generic;
-using System.Linq;
-using System.Collections;
-
 
 public class GameManager : MonoBehaviour
 {
@@ -13,10 +12,12 @@ public class GameManager : MonoBehaviour
 
     public GameObject gameCanvas;
 
-    public int rows;    // always 2
-    public int cols;    // varies based on difficulty
+    public int rows;
+    public int cols;
 
     public int gridSize;
+
+    public float scalingFactor = 2.0f;
 
     public List<Sprite> frontSprites = new List<Sprite>();
     public float revealTime;
@@ -36,8 +37,14 @@ public class GameManager : MonoBehaviour
 
     public GameObject quitButton;
 
-    // public Transform cardParent; // Parent object to organize cards in the hierarchy
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    public Camera gameCamera;
+
+    GameObject cardGridPanel;
+    RectTransform panelRectTransform;
+
+    public GameObject Spawner;
+
+    public GameObject cardGridText;
 
     /// <summary>
     /// Awake is called when the script instance is being loaded.
@@ -56,10 +63,6 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    // private void OnDestroy()
-    // {
-    //     SceneManager.sceneLoaded -= OnSceneLoaded;
-    // }
     void Start()
     {
         // Reset game state
@@ -69,17 +72,51 @@ public class GameManager : MonoBehaviour
         secondRevealed = null;
         canReveal = true;
 
+        if (gameCamera == null)
+        {
+            gameCamera = Camera.main;
+        }
+        else
+        {
+            Debug.Log("GameScene camera not assigned");
+        }
+
+        gameCanvas = GameObject.FindWithTag("GameCanvas");
+
+        // Find the Card Grid Panel in the current scene (make sure it has the proper tag)
+        cardGridPanel = GameObject.FindWithTag("CardGridPanel");
+        if (cardGridPanel == null)
+        {
+            Debug.LogError("Panel with tag 'CardGridPanel' not found in the current scene.");
+            return;
+        }
+
+        // Get the Panel's RectTransform so we know its actual dimensions.
+        panelRectTransform = cardGridPanel.GetComponent<RectTransform>();
+        if (panelRectTransform == null)
+        {
+            Debug.LogError("Panel does not have a RectTransform component.");
+            return;
+        }
+
+        // assign the transform of the gameCanvas to the cardGridPanel
+        // cardGridPanel.GetComponent<Transform>() = gameCanvas.GetComponent<Transform>();
+
         // load sprites
         frontSprites = LoadSprites();
         // access the game settings scriptable object
         if (gameSettings != null)
         {
             Debug.Log("Game settings loaded successfully!");
-            Debug.Log($"Rows:{gameSettings.rows}, Cols:{gameSettings.cols}, RevealTime: {gameSettings.revealTime}");
+            Debug.Log(
+                $"Rows:{gameSettings.rows}, Cols:{gameSettings.cols}, RevealTime: {gameSettings.revealTime}"
+            );
             rows = gameSettings.rows;
             cols = gameSettings.cols;
+            Debug.Log("Grid is " + rows + " by " + cols);
             revealTime = gameSettings.revealTime;
             CreateCardGrid(rows, cols, memoryCard, frontSprites);
+            // StartCoroutine(HandleScreenResize());
         }
         else
         {
@@ -97,68 +134,19 @@ public class GameManager : MonoBehaviour
 
             if (restartButton == null && gameDifficultyButton == null && quitButton == null)
             {
-                Debug.LogError("Restart, gameDifficulty and quit buttons not found in the GameScene!");
+                Debug.LogError(
+                    "Restart, gameDifficulty and quit buttons not found in the GameScene!"
+                );
             }
 
             // Ensure the WinScreenCanvas is disabled initially
             WinScreenCanvas.SetActive(false);
-
         }
         else
         {
             Debug.LogError("WinScreenCanvas UI element not found in the GameScene!");
-
         }
     }
-
-    // This method is called every time a new scene is loaded
-    // void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-    // {
-    //     // Reset game state
-    //     matchedPairs = 0;
-    //     totalPairs = 0;
-    //     firstRevealed = null;
-    //     secondRevealed = null;
-    //     canReveal = true;
-
-    //     // Check if the loaded scene is the one you want
-    //     if (scene.name == "GameScene")
-    //     {
-    //         // Place your code here that you want to run after the GameScene has loaded
-    //         Debug.Log("GameScene has loaded!");
-    //         // For example, you can call another method
-    //         List<Sprite> frontSpriteList = LoadSprites();
-    //         CreateCardGrid(rows, cols, memoryCard, frontSpriteList);
-
-    //         gameCanvas = GameObject.FindWithTag("GameCanvas");
-
-
-    //         // Find the WinScreenCanvas Panel in the GameScene
-    //         WinScreenCanvas = GameObject.FindWithTag("WinScreenCanvas");
-
-    //         if (WinScreenCanvas != null)
-    //         {
-    //             restartButton = GameObject.Find("RestartButton");
-    //             gameDifficultyButton = GameObject.Find("GameDifficultyButton");
-    //             quitButton = GameObject.Find("QuitButton");
-
-    //             if (restartButton == null && gameDifficultyButton == null && quitButton == null)
-    //             {
-    //                 Debug.LogError("Restart, gameDifficulty and quit buttons not found in the GameScene!");
-    //             }
-
-    //             // Ensure the WinScreenCanvas is disabled initially
-    //             WinScreenCanvas.SetActive(false);
-
-    //         }
-    //         else
-    //         {
-    //             Debug.LogError("WinScreenCanvas UI element not found in the GameScene!");
-
-    //         }
-    //     }
-
-    // }
 
     // get all the front sprite assets. Each sprite can only be assigned to two cards(a pair of cards) in the card grid
     List<Sprite> LoadSprites()
@@ -190,7 +178,6 @@ public class GameManager : MonoBehaviour
         {
             Debug.LogError("Difficulty Modal Canvas is not assigned!");
         }
-
     }
 
     public void ShowCanvas(GameObject canvas)
@@ -240,7 +227,8 @@ public class GameManager : MonoBehaviour
     public void CardRevealed(Card card)
     {
         Debug.Log($"Card revealed: {card.name} with ID: {card.id}");
-        if (!card.IsRevealed) return;
+        if (!card.IsRevealed)
+            return;
 
         if (firstRevealed == null)
         {
@@ -255,8 +243,6 @@ public class GameManager : MonoBehaviour
             StartCoroutine(MatchCards(firstRevealed, secondRevealed));
         }
     }
-
-
 
     //     How do i use the MatchCards method, where will I be referencing the firstCard and secondCard from?
 
@@ -292,7 +278,6 @@ public class GameManager : MonoBehaviour
                 // Trigger win sequence here (e.g., show win screen, play sound, etc.)
                 WinGame();
             }
-
         }
         else
         {
@@ -329,9 +314,6 @@ public class GameManager : MonoBehaviour
         // ShowGameStatistics();
     }
 
-    // In your GameManager class
-
-    // Add this to check and connect button listeners whenever the win screen appears
     public void ShowWinScreenCanvas()
     {
         if (WinScreenCanvas != null)
@@ -347,33 +329,39 @@ public class GameManager : MonoBehaviour
             {
                 // Remove existing listeners first to prevent duplicates
                 restartButton.GetComponent<Button>().onClick.RemoveAllListeners();
-                restartButton.GetComponent<Button>().onClick.AddListener(() =>
-                {
-                    Debug.Log("Restarting the game...");
-                    WinScreenCanvas.SetActive(false);
-                    SceneManager.LoadScene("GameScene");
-                });
+                restartButton
+                    .GetComponent<Button>()
+                    .onClick.AddListener(() =>
+                    {
+                        Debug.Log("Restarting the game...");
+                        WinScreenCanvas.SetActive(false);
+                        SceneManager.LoadScene("GameScene");
+                    });
             }
 
             if (gameDifficultyButton != null)
             {
                 gameDifficultyButton.GetComponent<Button>().onClick.RemoveAllListeners();
-                gameDifficultyButton.GetComponent<Button>().onClick.AddListener(() =>
-                {
-                    Debug.Log("Choose a difficulty setting...");
-                    WinScreenCanvas.SetActive(false);
-                    SceneManager.LoadScene("SettingsScene");
-                });
+                gameDifficultyButton
+                    .GetComponent<Button>()
+                    .onClick.AddListener(() =>
+                    {
+                        Debug.Log("Choose a difficulty setting...");
+                        WinScreenCanvas.SetActive(false);
+                        SceneManager.LoadScene("SettingsScene");
+                    });
             }
 
             if (quitButton != null)
             {
                 quitButton.GetComponent<Button>().onClick.RemoveAllListeners();
-                quitButton.GetComponent<Button>().onClick.AddListener(() =>
-                {
-                    Debug.Log("Quitting game...");
-                    SceneManager.LoadScene("WelcomeScene");
-                });
+                quitButton
+                    .GetComponent<Button>()
+                    .onClick.AddListener(() =>
+                    {
+                        Debug.Log("Quitting game...");
+                        SceneManager.LoadScene("WelcomeScene");
+                    });
             }
         }
         else
@@ -382,61 +370,9 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    // private void PlayWinSound()
-    // {
-    //     // Assuming you have an AudioSource component for playing sounds
-    //     AudioSource audioSource = GetComponent<AudioSource>();
-    //     if (audioSource != null)
-    //     {
-    //         audioSource.Play();
-    //     }
-    //     else
-    //     {
-    //         Debug.LogError("AudioSource component not found!");
-    //     }
-    // }
-
-    // private void DisablePlayerInput()
-    // {
-    //     // Disable player input to prevent further interaction
-    //     canReveal = false;
-    // }
-
-    // private void ShowGameStatistics()
-    // {
-    //     // Implement logic to display game statistics (e.g., time taken, moves made)
-    //     Debug.Log("Game completed in X moves and Y seconds.");
-    // }
-
-
-    // how do i access the panel component from the GameScene if my GameManager script is attached to a gameobject is a different scene - the SettingsScene?
-    // is it better if access the panel component from the Card prefab and assign panel's transform as the parent of the card prefab's transform?
-    // The grid should be in the center of the scene
     public void CreateCardGrid(int rows, int cols, GameObject cardPrefab, List<Sprite> frontSprites)
     {
-        // Find the Panel in the current scene (make sure it has the proper tag)
-        GameObject panel = GameObject.FindWithTag("CardGridPanel");
-        if (panel == null)
-        {
-            Debug.LogError("Panel with tag 'CardGridPanel' not found in the current scene.");
-            return;
-        }
-
-        // Get the Panel's RectTransform so we know its actual dimensions.
-        RectTransform panelTransform = panel.GetComponent<RectTransform>();
-        if (panelTransform == null)
-        {
-            Debug.LogError("Panel does not have a RectTransform component.");
-            return;
-        }
-
-        // Get the actual Rect (size and position) of the Panel.
-        Rect panelRect = panelTransform.rect;
-        // In local coordinates, the bottom left is:
-        // Vector2 panelBottomLeft = new Vector2(panelRect.xMin, panelRect.yMin);
-
-        // Get the center of the panel in local coordinates.
-        Vector2 panelCenter = panelRect.center;
+        RectTransform spawnerTransform = Spawner.GetComponent<RectTransform>();
 
         // Ensure cardPrefab has a SpriteRenderer component
         SpriteRenderer spriteRenderer = cardPrefab.GetComponent<SpriteRenderer>();
@@ -446,63 +382,164 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        // Get the size of the sprite (card) in world units.
-        Vector2 spriteSize = spriteRenderer.sprite.bounds.size;
+        // Get the card's RectTransform (since it now has one)
+        // RectTransform cardRectTransform = cardPrefab.GetComponent<RectTransform>();
+        // if (cardRectTransform == null)
+        // {
+        //     Debug.LogError("Card does not have a RectTransform component!");
+        //     return;
+        // }
 
-        // Define the horizontal (and vertical) spacing between cards.
-        float spacing = 3.35f;
+        // the position of the cards should be based on the spawner's transform, right?
+        // void PositionCard(GameObject card, int row, int col)
+        // {
+        //     // // Get screen dimensions in world units
+        //     float cameraHeight = gameCamera.orthographicSize * 2;
+        //     float cameraWidth = cameraHeight * gameCamera.aspect;
 
-        // Calculate total grid dimensions (accounting for spacing)
-        float totalGridWidth = cols * spriteSize.x + (cols - 1) * spacing;
-        float totalGridHeight = rows * spriteSize.y + (rows - 1) * spacing;
-        // If we want the grid's center to be at the Panel's bottom left,
-        // then the center of the grid should be exactly at panelBottomLeft.
-        // To calculate the starting (top-left) position for the grid, we subtract half of the grid's width (and add half of the card width)
-        // for x and add half of the grid's height (and subtract half of the card height) for y.
-        // Vector2 startPosition = new Vector2(
-        //      panelBottomLeft.x - totalGridWidth / 2 + spriteSize.x / 2,
-        //      panelBottomLeft.y + totalGridHeight / 2 - spriteSize.y / 2
-        // );
+        //     // Vector3 screenSpacePos = gameCamera.ScreenToWorldPoint(cardRectTransform.position);
 
-        // Calculate the starting position so that the grid is centered at the panel's center.
-        Vector2 startPosition = new Vector2(
-            panelCenter.x - totalGridWidth / 2 + spriteSize.x / 2,
-            panelCenter.y + totalGridHeight / 2 - spriteSize.y / 2
-        );
+        //     // Vector3 gameCameraPosition = gameCamera.transform.position;
+
+        //     // convert the space of the cards from world space to screen space
+        //     // Vector3 screenSpacePos = gameCamera.WorldToScreenPoint(cardPrefab.transform.position);
+        //     // screenSpacePos.z = 0;
+
+        //     // cardRectTransform.position = new Vector2(screenSpacePos.x, screenSpacePos.y);
+
+        //     // // Calculate available space (with some padding)
+        //     float padding = 0.1f; // 10% padding
+        //     float availableWidth = cameraWidth * (1 - padding);
+        //     float availableHeight = cameraHeight * (1 - padding);
+
+        //     // // Calculate card size including spacing
+        //     float horizontalSpacing = availableWidth * 0.05f; // 5% of width as spacing
+        //     float verticalSpacing = availableHeight * 0.05f;
+
+        //     // float gridWidth = (cols - 1) * horizontalSpacing;
+        //     // float gridHeight = (rows - 1) * verticalSpacing;
+
+        //     float xOffset = col - (cols - 1) / 2f;
+        //     float yOffset = row - (rows - 1) / 2f;
+
+        //     // float cameraCenterX = (gameCameraPosition.x - gridWidth / 2f);
+        //     // float cameraCenterY = (gameCameraPosition.y + gridHeight / 2f);
+
+        //     Vector3 screenSpacePos = gameCamera.ScreenToWorldPoint(spawnerTransform.position);
+        //     // screenSpacePos.z = 0;
+
+        //     Debug.Log($"this is the screen space position of the cards: {screenSpacePos}");
+
+        //     float startX = screenSpacePos.x;
+        //     float startY = screenSpacePos.y;
+
+        //     float x = startX + col * horizontalSpacing;
+        //     float y = startY - row * verticalSpacing;
+
+        //     Vector3 position = new Vector3(x + xOffset, y + yOffset, 0);
+
+        //     card.transform.position = position;
+
+        //     card.transform.localScale = Vector3.one * scalingFactor;
+
+        //     cardRectTransform.anchoredPosition = new Vector2(position.x, position.y);
+
+        //     Debug.Log($"Card UI positioned at: {cardRectTransform.position}");
+
+        //     Debug.Log($"Card rect transform position: {cardRectTransform.anchoredPosition}");
+        // }
+
+        void PositionCard(GameObject card, int row, int col)
+        {
+            // Get camera dimensions in world units
+            float cameraHeight = gameCamera.orthographicSize * 2;
+            float cameraWidth = cameraHeight * gameCamera.aspect;
+
+            // Calculate card spacing based on available screen space
+            float padding = 0.1f; // 10% padding from screen edges
+            float availableWidth = cameraWidth * (1 - padding);
+            float availableHeight = cameraHeight * (1 - padding);
+
+            // Calculate spacing to fit all cards within available space
+            float horizontalSpacing = availableWidth / cols;
+            float verticalSpacing = availableHeight / rows;
+
+            // Use the smaller spacing to maintain aspect ratio
+            float spacing = Mathf.Min(horizontalSpacing, verticalSpacing);
+
+            // Calculate total grid dimensions
+            float totalGridWidth = (cols - 1) * spacing;
+            float totalGridHeight = (rows - 1) * spacing;
+
+            // Start from camera center and offset by half grid size to center the grid
+            Vector3 cameraCenter = gameCamera.transform.position;
+            float startX = cameraCenter.x - totalGridWidth / 2f;
+            float startY = cameraCenter.y + totalGridHeight / 2f;
+
+            // spawnerTransform.position = gameCamera.ScreenToWorldPoint(spawnerTransform.position);
+
+            // float startX = spawnerTransform.position.x - totalGridWidth / 2f;
+            // float startY = spawnerTransform.position.y + totalGridHeight / 2f;
+
+            // convert the cards from their current space to whatever space the card grid text is in
+            // Vector3 screenSpacePos = gameCamera.ScreenToWorldPoint(spawnerTransform.position);
+
+            // startX = screenSpacePos.x;
+            // startY = screenSpacePos.y;
+
+            // Calculate final card position
+            float x = startX + col * spacing;
+            float y = startY - row * spacing;
+
+            Vector2 position = new Vector3(x, y);
+
+            // position = gameCamera.WorldToViewPoint(position);
+
+            card.transform.position = position;
+            card.transform.localScale = Vector3.one * scalingFactor;
+
+            Debug.Log($"Card at ({row},{col}) positioned at: {position}");
+        }
+
+        // Debug.Log($"Grid start position: {startPosition}, Grid dimensions:{totalGridWidth}x{totalGridHeight}");
 
         int[] shuffledNumbers = CreatePairedNumbersArray(rows, cols);
         totalPairs = shuffledNumbers.Length / 2;
 
+        // Calculate spacing and size based on screen dimensions
+        // CalculateCardDimensions();
 
         // Instantiate the grid of cards.
         for (int row = 0; row < rows; row++)
         {
             for (int col = 0; col < cols; col++)
             {
-                // Calculate each card's position using the starting point plus offsets for each row and column.
-                float posX = col * (spriteSize.x + spacing) + startPosition.x;
-                float posY = -row * (spriteSize.y + spacing) + startPosition.y;
+                GameObject newCard = Instantiate(cardPrefab, spawnerTransform);
 
-                Vector2 position = new Vector2(posX, posY);
+                Debug.Log($"Spawner position: {spawnerTransform.position}");
 
-                // Instantiate the card and set its parent to the Panel
-                GameObject newCard = Instantiate(cardPrefab, panel.transform);
+                Debug.Log($"Card grid text position: {cardGridText.transform.position}");
 
-                newCard.transform.localPosition = new Vector3(position.x, position.y, 0);
+                Debug.Log($"Instantiated card at position: {newCard.transform.position}");
 
-                // Assign a front sprite to the card.
+                // Position the card
+                PositionCard(newCard, row, col);
+
+                // newCard.transform.position = gameCamera.ScreenToWorldPoint(
+                //     newCard.transform.position
+                // );
+
                 // Calculate an index based on the row and col (example using a numbers array)
                 int index = row * cols + col;
+
                 // Clamp or wrap the index if necessary – here we assume 'numbers' has enough values
                 int id = shuffledNumbers[index];
 
                 Card cardScript = newCard.GetComponent<Card>();
 
-                // cardScript.LogCurrentScales();
-
+                // Assign a front sprite to the card.
                 if (cardScript != null && id < frontSprites.Count)
                 {
-
                     Transform frontTransform = cardScript.transform.Find("FrontSprite");
                     if (frontTransform != null)
                     {
@@ -526,16 +563,14 @@ public class GameManager : MonoBehaviour
                     {
                         Debug.LogError("Child GameObject 'FrontSprite' not found.");
                     }
-
                 }
                 else
                 {
-                    Debug.LogError("Either Card component not found or front sprite index is out of range.");
+                    Debug.LogError(
+                        "Either Card component not found or front sprite index is out of range."
+                    );
                 }
             }
         }
-
-        // StartCoroutine(MatchCards(firstRevealed, secondRevealed));
     }
-
 }

@@ -54,8 +54,6 @@ public class GameManager : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            // DontDestroyOnLoad(gameObject);
-            // SceneManager.sceneLoaded += OnSceneLoaded;
         }
         else
         {
@@ -99,9 +97,6 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        // assign the transform of the gameCanvas to the cardGridPanel
-        // cardGridPanel.GetComponent<Transform>() = gameCanvas.GetComponent<Transform>();
-
         // load sprites
         frontSprites = LoadSprites();
         // access the game settings scriptable object
@@ -116,7 +111,6 @@ public class GameManager : MonoBehaviour
             Debug.Log("Grid is " + rows + " by " + cols);
             revealTime = gameSettings.revealTime;
             CreateCardGrid(rows, cols, memoryCard, frontSprites);
-            // StartCoroutine(HandleScreenResize());
         }
         else
         {
@@ -372,7 +366,7 @@ public class GameManager : MonoBehaviour
 
     public void CreateCardGrid(int rows, int cols, GameObject cardPrefab, List<Sprite> frontSprites)
     {
-        RectTransform spawnerTransform = Spawner.GetComponent<RectTransform>();
+        Transform spawnerTransform = Spawner.GetComponent<Transform>();
 
         // Ensure cardPrefab has a SpriteRenderer component
         SpriteRenderer spriteRenderer = cardPrefab.GetComponent<SpriteRenderer>();
@@ -381,73 +375,6 @@ public class GameManager : MonoBehaviour
             Debug.LogError("Card prefab must have a SpriteRenderer component.");
             return;
         }
-
-        // Get the card's RectTransform (since it now has one)
-        // RectTransform cardRectTransform = cardPrefab.GetComponent<RectTransform>();
-        // if (cardRectTransform == null)
-        // {
-        //     Debug.LogError("Card does not have a RectTransform component!");
-        //     return;
-        // }
-
-        // the position of the cards should be based on the spawner's transform, right?
-        // void PositionCard(GameObject card, int row, int col)
-        // {
-        //     // // Get screen dimensions in world units
-        //     float cameraHeight = gameCamera.orthographicSize * 2;
-        //     float cameraWidth = cameraHeight * gameCamera.aspect;
-
-        //     // Vector3 screenSpacePos = gameCamera.ScreenToWorldPoint(cardRectTransform.position);
-
-        //     // Vector3 gameCameraPosition = gameCamera.transform.position;
-
-        //     // convert the space of the cards from world space to screen space
-        //     // Vector3 screenSpacePos = gameCamera.WorldToScreenPoint(cardPrefab.transform.position);
-        //     // screenSpacePos.z = 0;
-
-        //     // cardRectTransform.position = new Vector2(screenSpacePos.x, screenSpacePos.y);
-
-        //     // // Calculate available space (with some padding)
-        //     float padding = 0.1f; // 10% padding
-        //     float availableWidth = cameraWidth * (1 - padding);
-        //     float availableHeight = cameraHeight * (1 - padding);
-
-        //     // // Calculate card size including spacing
-        //     float horizontalSpacing = availableWidth * 0.05f; // 5% of width as spacing
-        //     float verticalSpacing = availableHeight * 0.05f;
-
-        //     // float gridWidth = (cols - 1) * horizontalSpacing;
-        //     // float gridHeight = (rows - 1) * verticalSpacing;
-
-        //     float xOffset = col - (cols - 1) / 2f;
-        //     float yOffset = row - (rows - 1) / 2f;
-
-        //     // float cameraCenterX = (gameCameraPosition.x - gridWidth / 2f);
-        //     // float cameraCenterY = (gameCameraPosition.y + gridHeight / 2f);
-
-        //     Vector3 screenSpacePos = gameCamera.ScreenToWorldPoint(spawnerTransform.position);
-        //     // screenSpacePos.z = 0;
-
-        //     Debug.Log($"this is the screen space position of the cards: {screenSpacePos}");
-
-        //     float startX = screenSpacePos.x;
-        //     float startY = screenSpacePos.y;
-
-        //     float x = startX + col * horizontalSpacing;
-        //     float y = startY - row * verticalSpacing;
-
-        //     Vector3 position = new Vector3(x + xOffset, y + yOffset, 0);
-
-        //     card.transform.position = position;
-
-        //     card.transform.localScale = Vector3.one * scalingFactor;
-
-        //     cardRectTransform.anchoredPosition = new Vector2(position.x, position.y);
-
-        //     Debug.Log($"Card UI positioned at: {cardRectTransform.position}");
-
-        //     Debug.Log($"Card rect transform position: {cardRectTransform.anchoredPosition}");
-        // }
 
         void PositionCard(GameObject card, int row, int col)
         {
@@ -476,24 +403,11 @@ public class GameManager : MonoBehaviour
             float startX = cameraCenter.x - totalGridWidth / 2f;
             float startY = cameraCenter.y + totalGridHeight / 2f;
 
-            // spawnerTransform.position = gameCamera.ScreenToWorldPoint(spawnerTransform.position);
-
-            // float startX = spawnerTransform.position.x - totalGridWidth / 2f;
-            // float startY = spawnerTransform.position.y + totalGridHeight / 2f;
-
-            // convert the cards from their current space to whatever space the card grid text is in
-            // Vector3 screenSpacePos = gameCamera.ScreenToWorldPoint(spawnerTransform.position);
-
-            // startX = screenSpacePos.x;
-            // startY = screenSpacePos.y;
-
             // Calculate final card position
             float x = startX + col * spacing;
             float y = startY - row * spacing;
 
             Vector2 position = new Vector3(x, y);
-
-            // position = gameCamera.WorldToViewPoint(position);
 
             card.transform.position = position;
             card.transform.localScale = Vector3.one * scalingFactor;
@@ -505,9 +419,6 @@ public class GameManager : MonoBehaviour
 
         int[] shuffledNumbers = CreatePairedNumbersArray(rows, cols);
         totalPairs = shuffledNumbers.Length / 2;
-
-        // Calculate spacing and size based on screen dimensions
-        // CalculateCardDimensions();
 
         // Instantiate the grid of cards.
         for (int row = 0; row < rows; row++)
@@ -524,10 +435,6 @@ public class GameManager : MonoBehaviour
 
                 // Position the card
                 PositionCard(newCard, row, col);
-
-                // newCard.transform.position = gameCamera.ScreenToWorldPoint(
-                //     newCard.transform.position
-                // );
 
                 // Calculate an index based on the row and col (example using a numbers array)
                 int index = row * cols + col;

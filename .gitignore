@@ -10,6 +10,10 @@
 [Ll]ogs/
 [Uu]ser[Ss]ettings/
 
+# But do NOT ignore the Build folder inside GameBuild and its contents
+!/GameBuild/Build/
+!/GameBuild/Build/**
+
 # MemoryCaptures can get excessive in size.
 # They also could contain extremely sensitive data
 /[Mm]emoryCaptures/

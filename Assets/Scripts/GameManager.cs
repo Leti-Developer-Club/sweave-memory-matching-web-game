@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -46,6 +47,12 @@ public class GameManager : MonoBehaviour
 
     public GameObject cardGridText;
 
+    public GameObject ScoreCounterText;
+
+    private TextMeshProUGUI moveTextGO;
+
+    private int moves = 0;
+
     /// <summary>
     /// Awake is called when the script instance is being loaded.
     /// </summary>
@@ -73,6 +80,7 @@ public class GameManager : MonoBehaviour
         if (gameCamera == null)
         {
             gameCamera = Camera.main;
+            Debug.Log("GameScene camera assigned");
         }
         else
         {
@@ -80,6 +88,21 @@ public class GameManager : MonoBehaviour
         }
 
         gameCanvas = GameObject.FindWithTag("GameCanvas");
+
+        // find the score counter text game object
+        ScoreCounterText = GameObject.Find("ScoreCounterText");
+        if (ScoreCounterText != null)
+        {
+            // get the text component
+            moveTextGO = ScoreCounterText.GetComponent<TextMeshProUGUI>();
+
+            //log the actual text
+            Debug.Log("ScoreCounterText text: " + moveTextGO.text);
+        }
+        else
+        {
+            Debug.Log("ScoreCounterText game object not found");
+        }
 
         // Find the Card Grid Panel in the current scene (make sure it has the proper tag)
         cardGridPanel = GameObject.FindWithTag("CardGridPanel");
@@ -99,6 +122,7 @@ public class GameManager : MonoBehaviour
 
         // load sprites
         frontSprites = LoadSprites();
+
         // access the game settings scriptable object
         if (gameSettings != null)
         {
@@ -111,11 +135,15 @@ public class GameManager : MonoBehaviour
             Debug.Log("Grid is " + rows + " by " + cols);
             revealTime = gameSettings.revealTime;
             CreateCardGrid(rows, cols, memoryCard, frontSprites);
+
         }
         else
         {
             Debug.LogError("Game settings not found!");
         }
+
+        //Show score: moves made
+        // ShowScore();
 
         // Find the WinScreenCanvas Panel in the GameScene
         WinScreenCanvas = GameObject.FindWithTag("WinScreenCanvas");
@@ -217,6 +245,20 @@ public class GameManager : MonoBehaviour
         return numbers;
     }
 
+    //     to implement a move counter
+    // what is a move?
+    // - a move is a pair of cards that have been clicked
+    // - have a move counter variable, when a pair of cards are clicked, increase it by one
+    public void ShowScore()
+    {
+        Debug.Log($"This is the current score: {moves}");
+        // if score is less than 1, the text should read Move but Moves otherwise
+        string movesWord = moves <= 1 ? "Move" : "Moves";
+        // how do i access the values of a TextMeshPro component
+        moveTextGO.text = $"{movesWord}: {moves}";
+    }
+
+
     // This method is called by a card when it's clicked.
     public void CardRevealed(Card card)
     {
@@ -232,6 +274,13 @@ public class GameManager : MonoBehaviour
         else if (secondRevealed == null && firstRevealed != card)
         {
             secondRevealed = card;
+
+            // increment the move count after a pair of cards have been clicked on or revealed
+            moves++;
+
+            // then show the score
+            ShowScore();
+
             canReveal = false;
             Debug.Log($"Second card revealed: {secondRevealed.name} with ID: {secondRevealed.id}");
             StartCoroutine(MatchCards(firstRevealed, secondRevealed));
@@ -287,6 +336,7 @@ public class GameManager : MonoBehaviour
         canReveal = true;
     }
 
+
     private void WinGame()
     {
         // Log the win event
@@ -294,9 +344,6 @@ public class GameManager : MonoBehaviour
 
         // Show a win screen
         ShowWinScreenCanvas();
-
-        //Show score: moves and time spent
-        // ShowScore();
 
         // Play a win sound
         // PlayWinSound();
@@ -363,6 +410,8 @@ public class GameManager : MonoBehaviour
             Debug.LogError("WinScreenCanvas UI element not found!");
         }
     }
+
+
 
     public void CreateCardGrid(int rows, int cols, GameObject cardPrefab, List<Sprite> frontSprites)
     {

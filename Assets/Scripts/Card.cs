@@ -4,7 +4,9 @@ using UnityEngine;
 public class Card : MonoBehaviour
 {
     public GameObject frontSprite; // Child GameObject that displays the front image
-    [SerializeField] GameObject backSprite;  // Child GameObject of frontSprite that displays the back sprite or image
+
+    [SerializeField]
+    GameObject backSprite; // Child GameObject of frontSprite that displays the back sprite or image
     private float startTime;
     private bool isRoundStarting;
     private bool isFrontVisible;
@@ -14,7 +16,7 @@ public class Card : MonoBehaviour
     // These values represent the size of the card's face regardless of the sprite's native size.
     public Vector2 targetSpriteSize = new Vector2(1.75f, 1.75f);
 
-    public Vector2 targetBackSpriteSize = new Vector2(3.0f, 3.0f);    // For the back sprite.
+    public Vector2 targetBackSpriteSize = new Vector2(3.0f, 3.0f); // For the back sprite.
 
     // Store the original prefab scale instead of trying to calculate new ones
     private Vector3 originalBackScale;
@@ -22,6 +24,7 @@ public class Card : MonoBehaviour
     public int id;
 
     public bool IsMatched { get; set; } // Property to track if the card is matched
+
     // public bool IsRevealed { get; set; } // Property to track if the card is revealed
 
     void Awake()
@@ -33,6 +36,7 @@ public class Card : MonoBehaviour
             Debug.Log($"Original back scale stored: {originalBackScale}");
         }
     }
+
     void Start()
     {
         if (GameManager.Instance != null)
@@ -101,7 +105,6 @@ public class Card : MonoBehaviour
 
         // Set the local scale of the frontSprite child accordingly.
         frontSprite.transform.localScale = new Vector3(scaleFactor, scaleFactor, 1);
-
     }
 
     public void SetBackSprite(Sprite newSprite)
@@ -115,8 +118,6 @@ public class Card : MonoBehaviour
         backSprite.transform.localScale = new Vector3(scaleFactor, scaleFactor, 1);
     }
 
-
-
     /// <summary>
     /// Sets the positions of the front and back sprites relative to the card container.
     /// </summary>
@@ -127,16 +128,32 @@ public class Card : MonoBehaviour
         // We just adjust the z-order of the front and back sprites.
         if (showFront)
         {
-            frontSprite.transform.position = new Vector3(transform.position.x, transform.position.y, -4.0f);
-            backSprite.transform.position = new Vector3(transform.position.x, transform.position.y, 4.0f);
+            frontSprite.transform.position = new Vector3(
+                transform.position.x,
+                transform.position.y,
+                -4.0f
+            );
+            backSprite.transform.position = new Vector3(
+                transform.position.x,
+                transform.position.y,
+                4.0f
+            );
         }
         else
         {
-            frontSprite.transform.position = new Vector3(transform.position.x, transform.position.y, 4.0f);
-            backSprite.transform.position = new Vector3(transform.position.x, transform.position.y, -4.0f);
+            frontSprite.transform.position = new Vector3(
+                transform.position.x,
+                transform.position.y,
+                4.0f
+            );
+            backSprite.transform.position = new Vector3(
+                transform.position.x,
+                transform.position.y,
+                -4.0f
+            );
         }
 
-        //set a scale for the back sprite 
+        //set a scale for the back sprite
         // Ensure the back sprite maintains its original scale
         backSprite.transform.localScale = originalBackScale;
     }

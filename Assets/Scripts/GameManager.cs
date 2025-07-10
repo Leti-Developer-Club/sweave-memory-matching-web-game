@@ -142,9 +142,6 @@ public class GameManager : MonoBehaviour
             Debug.LogError("Game settings not found!");
         }
 
-        //Show score: moves made
-        // ShowScore();
-
         // Find the WinScreenCanvas Panel in the GameScene
         WinScreenCanvas = GameObject.FindWithTag("WinScreenCanvas");
 

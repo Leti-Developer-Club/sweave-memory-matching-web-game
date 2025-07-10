@@ -1,7 +1,10 @@
-using UnityEngine;
 using TMPro;
+using UnityEngine;
 
-[CreateAssetMenu(fileName = "GameSettingsScriptableObject", menuName = "ScriptableObjects/GameSettingsScriptableObject")]
+[CreateAssetMenu(
+    fileName = "GameSettingsScriptableObject",
+    menuName = "ScriptableObjects/GameSettingsScriptableObject"
+)]
 public class GameSettingsScriptableObject : ScriptableObject
 {
     public int rows;
@@ -10,8 +13,6 @@ public class GameSettingsScriptableObject : ScriptableObject
 
     public void ChooseDifficulty(TMP_Text difficultyText)
     {
-
-
         if (difficultyText != null)
         {
             string buttonText = difficultyText.text.Trim().ToString();
@@ -38,8 +39,6 @@ public class GameSettingsScriptableObject : ScriptableObject
                     Debug.LogError("Unexpected button text: " + buttonText);
                     break;
             }
-
-
         }
     }
 }

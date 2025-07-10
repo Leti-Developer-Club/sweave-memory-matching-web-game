@@ -27,5 +27,3 @@ public class SceneSwitcher : MonoBehaviour
         Debug.Log("This is the " + sceneName);
     }
 }
-
-

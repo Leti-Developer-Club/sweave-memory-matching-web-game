@@ -1,4 +1,3 @@
-// using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -532,8 +531,6 @@ public class GameUIManager : MonoBehaviour
                 {
                     // CardUI only takes Sprite parameter
                     cardUIScript.SetFrontSprite(frontSprites[id]);
-                    // You'll need to assign back sprite here
-                    // cardUIScript.SetBackSprite(backSprite);
                 }
                 else
                 {

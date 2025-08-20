@@ -1,43 +1,29 @@
 using System.Collections;
 using UnityEngine;
 
-public class Card : MonoBehaviour
+public class Card : MonoBehaviour, ICard
 {
-    public GameObject frontSprite; // Child GameObject that displays the front image
+    public GameObject frontSprites;
+    public GameObject centerSprite; // Child GameObject that displays the front image
+
+    //other positioned sprites
+    public GameObject topLeftSprite;
+    public GameObject topRightSprite;
+    public GameObject bottomLeftSprite;
+    public GameObject bottomRightSprite;
 
     [SerializeField]
-    GameObject backSprite; // Child GameObject of frontSprite that displays the back sprite or image
+    public GameObject backSprite; // Child GameObject of frontSprite that displays the back sprite or image
     private float startTime;
     private bool isRoundStarting;
     private bool isFrontVisible;
     float revealTime;
 
-    // Desired target dimensions for the front sprite within the card container.
-    // These values represent the size of the card's face regardless of the sprite's native size.
-    public Vector2 targetSpriteSize = new Vector2(1.75f, 1.75f);
-
-    public Vector2 targetBackSpriteSize = new Vector2(3.0f, 3.0f); // For the back sprite.
-
-    // Store the original prefab scale instead of trying to calculate new ones
-    private Vector3 originalBackScale;
-
-    public int id;
+    public int id { get; set; }
 
     public bool IsMatched { get; set; } // Property to track if the card is matched
 
-    // public bool IsRevealed { get; set; } // Property to track if the card is revealed
-
     void Awake()
-    {
-        // Store the original scale from the prefab
-        if (backSprite != null)
-        {
-            originalBackScale = backSprite.transform.localScale * 5.75f;
-            Debug.Log($"Original back scale stored: {originalBackScale}");
-        }
-    }
-
-    void Start()
     {
         if (GameManager.Instance != null)
         {
@@ -47,16 +33,13 @@ public class Card : MonoBehaviour
         {
             Debug.LogError("GameManager script is not available");
         }
+    }
 
+    void Start()
+    {
         startTime = Time.realtimeSinceStartup;
         isRoundStarting = true;
         isFrontVisible = true;
-
-        // Ensure back sprite maintains its original scale
-        if (backSprite != null)
-        {
-            backSprite.transform.localScale = originalBackScale;
-        }
 
         // Set initial positions for front and back sprites.
         SetSpritePositions(true);
@@ -69,12 +52,6 @@ public class Card : MonoBehaviour
         {
             HideFront();
             isRoundStarting = false;
-        }
-
-        // Ensure back sprite scale hasn't changed
-        if (backSprite != null && backSprite.transform.localScale != originalBackScale)
-        {
-            backSprite.transform.localScale = originalBackScale;
         }
     }
 
@@ -94,28 +71,82 @@ public class Card : MonoBehaviour
     // / Sets the front sprite to a new sprite and scales it to fit the card's target size.
     // / </summary>
     // / <param name="newSprite">The sprite to assign.</param>
-    public void SetFrontSprite(Sprite newSprite)
+    public void SetFrontSprite(Vector2 cellSize, Sprite newSprite)
     {
-        // Calculate scaling factors so that the sprite fits within targetSpriteSize.
-        // You might want to preserve the aspect ratio.
-        float scaleX = targetSpriteSize.x / newSprite.bounds.size.x;
-        float scaleY = targetSpriteSize.y / newSprite.bounds.size.y;
-        // To preserve the aspect ratio, choose the smaller scale factor:
+        // the size of the card should be based on the grid cell size
+        float scaleX = cellSize.x / newSprite.bounds.size.x;
+        float scaleY = cellSize.y / newSprite.bounds.size.y;
         float scaleFactor = Mathf.Min(scaleX, scaleY);
 
-        // Set the local scale of the frontSprite child accordingly.
-        frontSprite.transform.localScale = new Vector3(scaleFactor, scaleFactor, 1);
+        // Assign the sprite to the center sprite renderer
+        if (centerSprite != null && centerSprite.GetComponent<SpriteRenderer>() != null)
+        {
+            centerSprite.GetComponent<SpriteRenderer>().sprite = newSprite;
+            centerSprite.transform.localScale = new Vector3(scaleFactor, scaleFactor, 1);
+        }
+
+        // Assign the sprite to the top left sprite renderer
+        if (topLeftSprite != null && topLeftSprite.GetComponent<SpriteRenderer>() != null)
+        {
+            topLeftSprite.GetComponent<SpriteRenderer>().sprite = newSprite;
+            topLeftSprite.transform.localScale = new Vector3(scaleFactor, scaleFactor, 1);
+        }
+
+        // Assign the sprite to the top right sprite renderer
+        if (topRightSprite != null && topRightSprite.GetComponent<SpriteRenderer>() != null)
+        {
+            topRightSprite.GetComponent<SpriteRenderer>().sprite = newSprite;
+            topRightSprite.transform.localScale = new Vector3(scaleFactor, scaleFactor, 1);
+        }
+
+        // Assign the sprite to the bottom right sprite renderer
+        if (bottomRightSprite != null && bottomRightSprite.GetComponent<SpriteRenderer>() != null)
+        {
+            bottomRightSprite.GetComponent<SpriteRenderer>().sprite = newSprite;
+            bottomRightSprite.transform.localScale = new Vector3(scaleFactor, scaleFactor, 1);
+        }
+
+        // Assign the sprite to the bottom left sprite renderer
+        if (bottomLeftSprite != null && bottomLeftSprite.GetComponent<SpriteRenderer>() != null)
+        {
+            bottomLeftSprite.GetComponent<SpriteRenderer>().sprite = newSprite;
+            bottomLeftSprite.transform.localScale = new Vector3(scaleFactor, scaleFactor, 1);
+        }
     }
 
-    public void SetBackSprite(Sprite newSprite)
+    public void SetBackSprite(Vector2 cellSize)
     {
-        // Calculate scaling factors for the back sprite based on its own target size.
-        float scaleX = targetBackSpriteSize.x / newSprite.bounds.size.x;
-        float scaleY = targetBackSpriteSize.y / newSprite.bounds.size.y;
+        Sprite newSprite = backSprite.GetComponent<SpriteRenderer>().sprite;
+
+        // calculate scaling for the backsprite based on the grid cell
+        // the size of the card should be based on the grid cell size
+        float scaleX = cellSize.x / newSprite.bounds.size.x;
+        float scaleY = cellSize.y / newSprite.bounds.size.y;
         float scaleFactor = Mathf.Min(scaleX, scaleY);
 
         // Set the local scale of the backSprite child accordingly.
         backSprite.transform.localScale = new Vector3(scaleFactor, scaleFactor, 1);
+
+        // Scale the FrontSprites container to match the back sprite size
+        // SetFrontSpritesContainerScale(scaleFactor);
+    }
+
+    /// <summary>
+    /// Sets the scale of the FrontSprites container to match the back sprite scale.
+    /// This ensures the front sprite container (mask) has the same size as the back sprite.
+    /// </summary>
+    /// <param name="scaleFactor">The scale factor to apply to the FrontSprites container.</param>
+    public void SetFrontSpritesContainerScale(float scaleFactor)
+    {
+        if (frontSprites != null)
+        {
+            frontSprites.transform.localScale = new Vector3(scaleFactor, scaleFactor, 1);
+            Debug.Log($"FrontSprites container scaled to: {scaleFactor}");
+        }
+        else
+        {
+            Debug.LogError("FrontSprites GameObject is not assigned!");
+        }
     }
 
     /// <summary>
@@ -128,7 +159,7 @@ public class Card : MonoBehaviour
         // We just adjust the z-order of the front and back sprites.
         if (showFront)
         {
-            frontSprite.transform.position = new Vector3(
+            frontSprites.transform.position = new Vector3(
                 transform.position.x,
                 transform.position.y,
                 -4.0f
@@ -141,7 +172,7 @@ public class Card : MonoBehaviour
         }
         else
         {
-            frontSprite.transform.position = new Vector3(
+            frontSprites.transform.position = new Vector3(
                 transform.position.x,
                 transform.position.y,
                 4.0f
@@ -152,10 +183,6 @@ public class Card : MonoBehaviour
                 -4.0f
             );
         }
-
-        //set a scale for the back sprite
-        // Ensure the back sprite maintains its original scale
-        backSprite.transform.localScale = originalBackScale;
     }
 
     private IEnumerator HideAfterDelay(float delay)
@@ -166,12 +193,13 @@ public class Card : MonoBehaviour
 
     private void OnMouseDown()
     {
-        Debug.Log("Clicking on the card...: " + id);
+        Debug.Log($"Card {id} clicked - Current state: front visible = {isFrontVisible}");
 
         // Check if cards can currently be revealed
         if (!GameManager.Instance.canReveal)
         {
-            return; // Exit if not allowed.
+            Debug.Log("Cards cannot be revealed right now");
+            return;
         }
 
         // only show the front sprite, if it is hidden
@@ -193,6 +221,45 @@ public class Card : MonoBehaviour
 
     public bool IsRevealed
     {
-        get { return isFrontVisible; } // or some internal bool.
+        get { return isFrontVisible; }
+    }
+
+    /// <summary>
+    /// Updates the sprite sizes based on the calculated cell size from the layout group.
+    /// </summary>
+    /// <param name="cellSize">The calculated cell size from FlexibleGridLayoutGroup</param>
+    public void UpdateSpriteSize(Vector2 cellSize)
+    {
+        // Get the current sprites to recalculate their sizes
+        Sprite centerSpriteImage = centerSprite?.GetComponent<SpriteRenderer>()?.sprite;
+
+        if (centerSpriteImage != null)
+        {
+            // Recalculate scale based on new cell size
+            float scaleX = cellSize.x / centerSpriteImage.bounds.size.x;
+            float scaleY = cellSize.y / centerSpriteImage.bounds.size.y;
+            float scaleFactor = Mathf.Min(scaleX, scaleY);
+
+            // Update all front sprites
+            if (centerSprite != null)
+                centerSprite.transform.localScale = new Vector3(scaleFactor, scaleFactor, 1);
+            if (topLeftSprite != null)
+                topLeftSprite.transform.localScale = new Vector3(scaleFactor, scaleFactor, 1);
+            if (topRightSprite != null)
+                topRightSprite.transform.localScale = new Vector3(scaleFactor, scaleFactor, 1);
+            if (bottomLeftSprite != null)
+                bottomLeftSprite.transform.localScale = new Vector3(scaleFactor, scaleFactor, 1);
+            if (bottomRightSprite != null)
+                bottomRightSprite.transform.localScale = new Vector3(scaleFactor, scaleFactor, 1);
+
+            // Update back sprite scale
+            if (backSprite != null)
+                backSprite.transform.localScale = new Vector3(scaleFactor, scaleFactor, 1);
+
+            // Update front sprites container scale
+            SetFrontSpritesContainerScale(scaleFactor);
+
+            Debug.Log($"Card {id} updated to cell size: {cellSize}, scale factor: {scaleFactor}");
+        }
     }
 }

@@ -1,3 +1,4 @@
+// using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +14,18 @@ public class GameManager : MonoBehaviour
 
     public GameObject gameCanvas;
 
+    public GameObject pauseCanvas;
+
+    public Button pauseButton;
+
+    public Button resumeButton;
+
+    public Button closeButton;
+
+    public Button settingsButton;
+
+    public Button pauseQuitButton;
+
     public int rows;
     public int cols;
 
@@ -24,8 +37,8 @@ public class GameManager : MonoBehaviour
     public float revealTime;
     public GameObject memoryCard;
 
-    public Card firstRevealed;
-    public Card secondRevealed;
+    public ICard firstRevealed;
+    public ICard secondRevealed;
     public bool canReveal = true;
 
     private int matchedPairs = 0;
@@ -43,9 +56,7 @@ public class GameManager : MonoBehaviour
     GameObject cardGridPanel;
     RectTransform panelRectTransform;
 
-    public GameObject Spawner;
-
-    public GameObject cardGridText;
+    // public GameObject Spawner;
 
     public GameObject ScoreCounterText;
 
@@ -65,6 +76,15 @@ public class GameManager : MonoBehaviour
         else
         {
             Destroy(gameObject);
+        }
+
+        if (pauseCanvas != null)
+        {
+            pauseCanvas.SetActive(false);
+        }
+        else
+        {
+            Debug.Log("Pause screen canvas not found");
         }
     }
 
@@ -135,7 +155,9 @@ public class GameManager : MonoBehaviour
             Debug.Log("Grid is " + rows + " by " + cols);
             revealTime = gameSettings.revealTime;
             CreateCardGrid(rows, cols, memoryCard, frontSprites);
-
+            PauseGame();
+            ResumeGame();
+            QuitGame();
         }
         else
         {
@@ -165,6 +187,44 @@ public class GameManager : MonoBehaviour
         {
             Debug.LogError("WinScreenCanvas UI element not found in the GameScene!");
         }
+    }
+
+    // when the pause button is clicked, the pause screen should be enabled
+    void PauseGame()
+    {
+        pauseButton.onClick.AddListener(() =>
+        {
+            Debug.Log("Pause Button Clicked");
+            gameCanvas.SetActive(false);
+            pauseCanvas.SetActive(true);
+        });
+    }
+
+    void ResumeGame()
+    {
+        resumeButton.onClick.AddListener(() =>
+        {
+            Debug.Log("Resume Button Clicked");
+            pauseCanvas.SetActive(false);
+            gameCanvas.SetActive(true);
+        });
+
+        closeButton.onClick.AddListener(() =>
+        {
+            Debug.Log("Close Button Clicked");
+            pauseCanvas.SetActive(false);
+            gameCanvas.SetActive(true);
+        });
+    }
+
+    void QuitGame()
+    {
+        pauseQuitButton.onClick.AddListener(() =>
+        {
+            Debug.Log("Quit Button Clicked");
+            pauseCanvas.SetActive(false);
+            SceneManager.LoadScene("WelcomeScene");
+        });
     }
 
     // get all the front sprite assets. Each sprite can only be assigned to two cards(a pair of cards) in the card grid
@@ -216,7 +276,7 @@ public class GameManager : MonoBehaviour
         int[] newArray = numbers.Clone() as int[];
         for (int i = newArray.Length - 1; i > 0; i--)
         {
-            int randomIndex = Random.Range(0, i + 1);
+            int randomIndex = UnityEngine.Random.Range(0, i + 1);
             int temp = newArray[i];
             newArray[i] = newArray[randomIndex];
             newArray[randomIndex] = temp;
@@ -228,8 +288,18 @@ public class GameManager : MonoBehaviour
     public int[] CreatePairedNumbersArray(int rows, int cols)
     {
         int totalCards = rows * cols;
-        int pairCount = totalCards / 2;
-        int[] numbers = new int[totalCards];
+        int pairCount;
+        int[] numbers;
+        if (totalCards % 2 != 0)
+        {
+            Debug.LogError("Total cards must be even to form pairs!");
+            return null;
+        }
+        else
+        {
+            pairCount = totalCards / 2;
+            numbers = new int[totalCards];
+        }
 
         for (int i = 0; i < pairCount; i++)
         {
@@ -255,18 +325,18 @@ public class GameManager : MonoBehaviour
         moveTextGO.text = $"{movesWord}: {moves}";
     }
 
-
-    // This method is called by a card when it's clicked.
-    public void CardRevealed(Card card)
+    // This method is called by a card when it's clicked. Works with both Card and CardUI
+    public void CardRevealed(ICard card)
     {
-        Debug.Log($"Card revealed: {card.name} with ID: {card.id}");
+        MonoBehaviour cardMB = card as MonoBehaviour;
+        Debug.Log($"Card revealed: {cardMB?.name} with ID: {card.id}");
         if (!card.IsRevealed)
             return;
 
         if (firstRevealed == null)
         {
             firstRevealed = card;
-            Debug.Log($"First card revealed: {firstRevealed.name} with ID: {firstRevealed.id}");
+            Debug.Log($"First card revealed: {cardMB?.name} with ID: {firstRevealed.id}");
         }
         else if (secondRevealed == null && firstRevealed != card)
         {
@@ -279,26 +349,26 @@ public class GameManager : MonoBehaviour
             ShowScore();
 
             canReveal = false;
-            Debug.Log($"Second card revealed: {secondRevealed.name} with ID: {secondRevealed.id}");
+            Debug.Log($"Second card revealed: {cardMB?.name} with ID: {secondRevealed.id}");
             StartCoroutine(MatchCards(firstRevealed, secondRevealed));
         }
     }
 
     //     How do i use the MatchCards method, where will I be referencing the firstCard and secondCard from?
 
-    public IEnumerator MatchCards(Card firstCard, Card secondCard)
+    public IEnumerator MatchCards(ICard firstCard, ICard secondCard)
     {
         if (firstCard.id == secondCard.id)
         {
             Debug.Log("Cards match!");
 
             // let those cards show their front sprites till the end of the game
-            firstCard.GetComponent<Card>().IsMatched = true;
-            secondCard.GetComponent<Card>().IsMatched = true;
+            firstCard.IsMatched = true;
+            secondCard.IsMatched = true;
 
             // let those cards show their front sprites till the end of the game
-            firstCard.GetComponent<Card>().ShowFrontSprite();
-            secondCard.GetComponent<Card>().ShowFrontSprite();
+            firstCard.ShowFrontSprite();
+            secondCard.ShowFrontSprite();
 
             matchedPairs++;
             if (matchedPairs == totalPairs)
@@ -324,15 +394,14 @@ public class GameManager : MonoBehaviour
             Debug.Log("Cards don't match!");
             // Wait a bit so the player can see the cards.
             yield return new WaitForSeconds(1.0f);
-            firstCard.GetComponent<Card>().HideFront();
-            secondCard.GetComponent<Card>().HideFront();
+            firstCard.HideFront();
+            secondCard.HideFront();
         }
         // Reset for the next pair.
         firstRevealed = null;
         secondRevealed = null;
         canReveal = true;
     }
-
 
     private void WinGame()
     {
@@ -408,120 +477,75 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    private float availableWidth;
+    private float availableHeight;
+    private Vector2 cellSize;
 
+    RectTransform CGRectTransform;
+    int[] shuffledNumbers;
 
     public void CreateCardGrid(int rows, int cols, GameObject cardPrefab, List<Sprite> frontSprites)
     {
-        Transform spawnerTransform = Spawner.GetComponent<Transform>();
 
-        // Ensure cardPrefab has a SpriteRenderer component
-        SpriteRenderer spriteRenderer = cardPrefab.GetComponent<SpriteRenderer>();
-        if (spriteRenderer == null)
-        {
-            Debug.LogError("Card prefab must have a SpriteRenderer component.");
-            return;
-        }
+        // Get layout and set grid size
+        FlexibleGridLayoutGroup layoutGroup = cardGridPanel.GetComponent<FlexibleGridLayoutGroup>();
+        layoutGroup.SetGridSize(rows, cols);
 
-        void PositionCard(GameObject card, int row, int col)
-        {
-            // Get camera dimensions in world units
-            float cameraHeight = gameCamera.orthographicSize * 2;
-            float cameraWidth = cameraHeight * gameCamera.aspect;
+        // Remove old cards
+        foreach (Transform child in cardGridPanel.transform)
+            Destroy(child.gameObject);
 
-            // Calculate card spacing based on available screen space
-            float padding = 0.1f; // 10% padding from screen edges
-            float availableWidth = cameraWidth * (1 - padding);
-            float availableHeight = cameraHeight * (1 - padding);
-
-            // Calculate spacing to fit all cards within available space
-            float horizontalSpacing = availableWidth / cols;
-            float verticalSpacing = availableHeight / rows;
-
-            // Use the smaller spacing to maintain aspect ratio
-            float spacing = Mathf.Min(horizontalSpacing, verticalSpacing);
-
-            // Calculate total grid dimensions
-            float totalGridWidth = (cols - 1) * spacing;
-            float totalGridHeight = (rows - 1) * spacing;
-
-            // Start from camera center and offset by half grid size to center the grid
-            Vector3 cameraCenter = gameCamera.transform.position;
-            float startX = cameraCenter.x - totalGridWidth / 2f;
-            float startY = cameraCenter.y + totalGridHeight / 2f;
-
-            // Calculate final card position
-            float x = startX + col * spacing;
-            float y = startY - row * spacing;
-
-            Vector2 position = new Vector3(x, y);
-
-            card.transform.position = position;
-            card.transform.localScale = Vector3.one * scalingFactor;
-
-            Debug.Log($"Card at ({row},{col}) positioned at: {position}");
-        }
-
-        // Debug.Log($"Grid start position: {startPosition}, Grid dimensions:{totalGridWidth}x{totalGridHeight}");
-
-        int[] shuffledNumbers = CreatePairedNumbersArray(rows, cols);
+        // Create shuffled pairs
+        shuffledNumbers = CreatePairedNumbersArray(rows, cols);
         totalPairs = shuffledNumbers.Length / 2;
 
-        // Instantiate the grid of cards.
-        for (int row = 0; row < rows; row++)
+        // Instantiate cards
+        for (int i = 0; i < shuffledNumbers.Length; i++)
         {
-            for (int col = 0; col < cols; col++)
+            GameObject newCard = Instantiate(cardPrefab, cardGridPanel.transform);
+
+            int id = shuffledNumbers[i];
+
+            // Try Card first (legacy sprite-based)
+            Card cardScript = newCard.GetComponent<Card>();
+            if (cardScript != null)
             {
-                GameObject newCard = Instantiate(cardPrefab, spawnerTransform);
+                cardScript.id = id;
 
-                Debug.Log($"Spawner position: {spawnerTransform.position}");
-
-                Debug.Log($"Card grid text position: {cardGridText.transform.position}");
-
-                Debug.Log($"Instantiated card at position: {newCard.transform.position}");
-
-                // Position the card
-                PositionCard(newCard, row, col);
-
-                // Calculate an index based on the row and col (example using a numbers array)
-                int index = row * cols + col;
-
-                // Clamp or wrap the index if necessary – here we assume 'numbers' has enough values
-                int id = shuffledNumbers[index];
-
-                Card cardScript = newCard.GetComponent<Card>();
-
-                // Assign a front sprite to the card.
-                if (cardScript != null && id < frontSprites.Count)
+                if (id < frontSprites.Count)
                 {
-                    Transform frontTransform = cardScript.transform.Find("FrontSprite");
-                    if (frontTransform != null)
+                    // Card uses Vector2 parameter for scaling
+                    cardScript.SetFrontSprite(Vector2.zero, frontSprites[id]);
+                    cardScript.SetBackSprite(Vector2.zero);
+                }
+                else
+                {
+                    Debug.LogError($"Invalid sprite ID {id}");
+                }
+            }
+            else
+            {
+                // Try CardUI (UI-based)
+                CardUI cardUIScript = newCard.GetComponent<CardUI>();
+                if (cardUIScript != null)
+                {
+                    cardUIScript.id = id;
+
+                    if (id < frontSprites.Count)
                     {
-                        // get the FrontSprite GameObject and assign a sprite to it
-                        GameObject frontSpriteGO = frontTransform.gameObject;
-                        // Now you can access the SpriteRenderer component on frontSpriteGO:
-                        SpriteRenderer sr = frontSpriteGO.GetComponent<SpriteRenderer>();
-                        if (sr != null)
-                        {
-                            cardScript.id = id;
-                            sr.sprite = frontSprites[id];
-                            // Now call SetFrontSprite on the Card component.
-                            cardScript.SetFrontSprite(sr.sprite);
-                        }
-                        else
-                        {
-                            Debug.LogError("SpriteRenderer not found on FrontSprite.");
-                        }
+                        // CardUI only takes Sprite parameter
+                        cardUIScript.SetFrontSprite(frontSprites[id]);
+                        // You'll need to assign back sprite here
+                        // cardUIScript.SetBackSprite(backSprite);
                     }
                     else
                     {
-                        Debug.LogError("Child GameObject 'FrontSprite' not found.");
+                        Debug.LogError($"Invalid sprite ID {id}");
                     }
                 }
                 else
                 {
-                    Debug.LogError(
-                        "Either Card component not found or front sprite index is out of range."
-                    );
+                    Debug.LogError("Card prefab must have either Card or CardUI component!");
                 }
             }
         }

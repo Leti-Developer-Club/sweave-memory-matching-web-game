@@ -13,10 +13,15 @@ public class SettingsManager : MonoBehaviour
     public GameObject closeButton;
     public GameObject difficultyModalCanvas;
     public GameObject settingsCanvas;
+    public Button soundSettingsButton;
+    public Button closeSettingsButton;
+    public GameObject soundSettingsCanvas;
+
 
     void Start()
     {
-        HideCanvas();
+        HideCanvas(difficultyModalCanvas);
+        HideCanvas(soundSettingsCanvas);
 
         Button thisEasyButton = easyButton.GetComponent<Button>();
         Button thisMediumButton = mediumButton.GetComponent<Button>();
@@ -51,8 +56,8 @@ public class SettingsManager : MonoBehaviour
             {
                 Debug.Log("Close button clicked...");
 
-                //hide the Difficulty options modal and show the settings scene
-                HideCanvas();
+                //hide the Difficulty options modal and go to the settings scene
+                HideCanvas(difficultyModalCanvas);
 
                 SceneManager.LoadScene("WelcomeScene");
             });
@@ -61,17 +66,28 @@ public class SettingsManager : MonoBehaviour
         {
             Debug.LogError("Close button is not assigned");
         }
+
+        soundSettingsButton.onClick.AddListener(() =>
+        {
+            ShowCanvas(soundSettingsCanvas);
+        });
+
+        closeSettingsButton.onClick.AddListener(() =>
+        {
+            HideCanvas(soundSettingsCanvas);
+        });
     }
 
-    public void HideCanvas()
+    public void HideCanvas(GameObject canvas)
     {
-        if (difficultyModalCanvas != null)
+
+        if (canvas != null)
         {
-            difficultyModalCanvas.SetActive(false);
+            canvas.SetActive(false);
         }
         else
         {
-            Debug.LogError("Difficulty Modal Canvas is not assigned!");
+            Debug.LogError(canvas.name + "is not assigned!");
         }
     }
 
@@ -83,7 +99,7 @@ public class SettingsManager : MonoBehaviour
         }
         else
         {
-            Debug.LogError("Difficulty Modal Canvas is not assigned!");
+            Debug.LogError(canvas.name + "is not assigned!");
         }
     }
 

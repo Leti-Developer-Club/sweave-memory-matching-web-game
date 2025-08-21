@@ -80,5 +80,9 @@ mono_crash.*
 
 # ignore vscode settings
 .vscode/
+
+# ignore zed editor settings
+.zed/
+
 codealike.json
 dotnet-tools.json

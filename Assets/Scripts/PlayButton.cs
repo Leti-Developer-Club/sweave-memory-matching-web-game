@@ -1,8 +1,8 @@
-using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.SceneManagement;
-using TMPro;
 using System.Collections.Generic;
+using TMPro;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class PlayButton : MonoBehaviour
 {
@@ -21,12 +21,14 @@ public class PlayButton : MonoBehaviour
             return;
         }
 
-        gameObject.GetComponent<Button>().onClick.AddListener(() =>
-        {
-            Debug.Log("Play Button Clicked");
-            SetRandomDifficulty();
-            SceneManager.LoadScene("GameScene");
-        });
+        gameObject
+            .GetComponent<Button>()
+            .onClick.AddListener(() =>
+            {
+                Debug.Log("Play Button Clicked");
+                SetRandomDifficulty();
+                SceneManager.LoadScene("GameScene");
+            });
     }
 
     void CreateDifficultyTexts()
@@ -64,10 +66,11 @@ public class PlayButton : MonoBehaviour
         int randomNum = Random.Range(0, difficultyTexts.Count);
 
         Debug.Log("Passing difficulty: " + difficultyTexts[randomNum].text);
-        Debug.Log($"Rows:{gameSettings.rows}, Cols:{gameSettings.cols}, RevealTime: {gameSettings.revealTime}");
+        Debug.Log(
+            $"Rows:{gameSettings.rows}, Cols:{gameSettings.cols}, RevealTime: {gameSettings.revealTime}"
+        );
 
         // Pass the randomly selected difficulty to GameManager
         gameSettings.ChooseDifficulty(difficultyTexts[randomNum]);
-
     }
 }

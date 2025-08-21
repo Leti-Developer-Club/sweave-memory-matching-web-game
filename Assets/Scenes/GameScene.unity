@@ -1378,12 +1378,12 @@ PrefabInstance:
     - target: {fileID: 5212742557200762840, guid: 6bf906219d8fcca63a62e8bca6d37a8d,
         type: 3}
       propertyPath: m_SizeDelta.x
-      value: 105
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 5212742557200762840, guid: 6bf906219d8fcca63a62e8bca6d37a8d,
         type: 3}
       propertyPath: m_SizeDelta.y
-      value: 50
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 5212742557200762840, guid: 6bf906219d8fcca63a62e8bca6d37a8d,
         type: 3}
@@ -1433,12 +1433,12 @@ PrefabInstance:
     - target: {fileID: 5212742557200762840, guid: 6bf906219d8fcca63a62e8bca6d37a8d,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 328
+      value: 150
       objectReference: {fileID: 0}
     - target: {fileID: 5212742557200762840, guid: 6bf906219d8fcca63a62e8bca6d37a8d,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -117
+      value: -50
       objectReference: {fileID: 0}
     - target: {fileID: 5212742557200762840, guid: 6bf906219d8fcca63a62e8bca6d37a8d,
         type: 3}
@@ -2273,6 +2273,7 @@ MonoBehaviour:
   quitButton: {fileID: 0}
   gameCamera: {fileID: 296427305}
   ScoreCounterText: {fileID: 554689691}
+  cardScale: {x: 1, y: 1, z: 1}
 --- !u!1 &1337278193
 GameObject:
   m_ObjectHideFlags: 0
@@ -2339,7 +2340,7 @@ MonoBehaviour:
   rows: 2
   cols: 4
   spacing: {x: 5, y: 5}
-  cellSize: {x: 476.1044, y: 537.66394}
+  cellSize: {x: 476.3028, y: 537.44055}
 --- !u!1 &1345819807
 GameObject:
   m_ObjectHideFlags: 0

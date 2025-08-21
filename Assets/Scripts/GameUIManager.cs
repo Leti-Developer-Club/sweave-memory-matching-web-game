@@ -327,7 +327,7 @@ public class GameUIManager : MonoBehaviour
         moveTextGO.text = $"{movesWord}: {moves}";
     }
 
-    // This method is called by a card when it's clicked. Works with both Card and CardUI
+    // This method is called by a card when it's clicked. Works with both Card and MemoryCard
     public void CardRevealed(ICard card)
     {
         MonoBehaviour cardMB = card as MonoBehaviour;
@@ -482,7 +482,7 @@ public class GameUIManager : MonoBehaviour
     private float availableWidth;
     private float availableHeight;
     private Vector2 cellSize;
-
+    public Vector3 cardScale = new Vector3(0.5f, 0.5f, 0.5f);
 
     RectTransform CGRectTransform;
     int[] shuffledNumbers;
@@ -508,7 +508,7 @@ public class GameUIManager : MonoBehaviour
         {
             Debug.Log("card grid rect transform position: " + CGRectTransform.position);
 
-            Vector3 ScreenSpaceCGPosition = gameCamera.WorldToScreenPoint(CGRectTransform.position);
+            // Vector3 ScreenSpaceCGPosition = gameCamera.WorldToScreenPoint(CGRectTransform.position);
 
             GameObject newCard = Instantiate(cardPrefab, CGRectTransform);
 
@@ -521,16 +521,22 @@ public class GameUIManager : MonoBehaviour
 
             int id = shuffledNumbers[i];
 
-            // Try CardUI (UI-based)
-            CardUI cardUIScript = newCard.GetComponent<CardUI>();
-            if (cardUIScript != null)
+            // Try MemoryCard (UI-based)
+            MemoryCard MemoryCardScript = newCard.GetComponent<MemoryCard>();
+
+            // MemoryCardScript.transform.localScale = cardScale;
+            // the size of the cards should be based on the size of their grid cells
+            // MemoryCardScript.UpdateSpriteSize(cellSize);
+
+            if (MemoryCardScript != null)
             {
-                cardUIScript.id = id;
+                MemoryCardScript.id = id;
 
                 if (id < frontSprites.Count)
                 {
-                    // CardUI only takes Sprite parameter
-                    cardUIScript.SetFrontSprite(frontSprites[id]);
+                    // MemoryCard only takes Sprite parameter
+                    MemoryCardScript.SetFrontSprite(frontSprites[id]);
+
                 }
                 else
                 {
@@ -539,7 +545,7 @@ public class GameUIManager : MonoBehaviour
             }
             else
             {
-                Debug.LogError("Card prefab must have either Card or CardUI component!");
+                Debug.LogError("Card prefab must have either Card or MemoryCard component!");
             }
         }
     }

@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
-public class CardUI : MonoBehaviour, IPointerClickHandler, ICard
+public class MemoryCard : MonoBehaviour, IPointerClickHandler, ICard
 {
     [Header("UI Components")]
     public GameObject frontSprites;
@@ -133,38 +133,6 @@ public class CardUI : MonoBehaviour, IPointerClickHandler, ICard
         if (backSprite != null)
             backSprite.gameObject.SetActive(!showFront);
     }
-
-    // private void SetSpritePositions(bool showFront)
-    // {
-    //     // The container (this GameObject) maintains a fixed position and scale.
-    //     // We just adjust the z-order of the front and back sprites.
-    //     if (showFront)
-    //     {
-    //         frontSprites.transform.position = new Vector3(
-    //             transform.position.x,
-    //             transform.position.y,
-    //             -4.0f
-    //         );
-    //         backSprite.transform.position = new Vector3(
-    //             transform.position.x,
-    //             transform.position.y,
-    //             4.0f
-    //         );
-    //     }
-    //     else
-    //     {
-    //         frontSprites.transform.position = new Vector3(
-    //             transform.position.x,
-    //             transform.position.y,
-    //             4.0f
-    //         );
-    //         backSprite.transform.position = new Vector3(
-    //             transform.position.x,
-    //             transform.position.y,
-    //             -4.0f
-    //         );
-    //     }
-    // }
 
     private IEnumerator HideAfterDelay(float delay)
     {

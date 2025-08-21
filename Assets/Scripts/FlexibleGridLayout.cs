@@ -58,9 +58,7 @@ public class FlexibleGridLayoutGroup : LayoutGroup
         float totalWidth = cols * cellSize.x + (cols - 1) * spacing.x;
         float totalHeight = rows * cellSize.y + (rows - 1) * spacing.y;
 
-        // Calculate starting position (top-left corner)
-        // float startX = padding.left - totalWidth * 0.5f + cellSize.x * 0.5f;
-        // float startY = totalHeight * 0.5f - cellSize.y * 0.5f - padding.top;
+        // Calculate starting position (bottom-left corner?)
         float startX = gameObject.transform.localPosition.x;
         float startY = gameObject.transform.localPosition.y;
 
@@ -76,18 +74,19 @@ public class FlexibleGridLayoutGroup : LayoutGroup
             // Calculate proper grid positions
             xPos = startX + col * (cellSize.x + spacing.x);
             yPos = startY + row * (cellSize.y + spacing.y);
-            //
-            // xPos = startX;
-            // yPos = startY;
 
             SetChildAlongAxis(rectChildren[i], 0, xPos, cellSize.x);
             SetChildAlongAxis(rectChildren[i], 1, yPos, cellSize.y);
 
-            // Also try CardUI component for UI-based cards
-            CardUI cardUIScript = rectChildren[i].GetComponent<CardUI>();
-            if (cardUIScript != null)
+            // Also try MemoryCard component for UI-based cards
+            MemoryCard MemoryCardScript = rectChildren[i].GetComponent<MemoryCard>();
+            if (MemoryCardScript != null)
             {
-                cardUIScript.UpdateSpriteSize(cellSize);
+                MemoryCardScript.UpdateSpriteSize(cellSize);
+            }
+            else
+            {
+                Debug.Log("No MemoryCard component found");
             }
         }
     }
